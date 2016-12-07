@@ -1,0 +1,31 @@
+{
+  "name": "prosemirror-dropcursor",
+  "version": "0.14.0",
+  "description": "Drop cursor plugin for ProseMirror",
+  "main": "dist/dropcursor.js",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Marijn Haverbeke",
+      "email": "marijnh@gmail.com",
+      "web": "http://marijnhaverbeke.nl"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/prosemirror/prosemirror-dropcursor.git"
+  },
+  "devDependencies": {
+    "buble": "~0.14.0",
+    "rimraf": "^2.5.4"
+  },
+  "dependencies": {
+    "prosemirror-state": "^0.14.0",
+    "prosemirror-view": "^0.14.0"
+  },
+  "scripts": {
+    "build": "rimraf dist && buble -i src -o dist",
+    "link-src": "rimraf dist && ln -s src dist",
+    "prepublish": "npm run build"
+  }
+}
