@@ -24,8 +24,8 @@ function dropCursor(options) {
         let active = this.getState(view.state)
         switch (event.type) {
         case "dragover":
-          let pos = view.posAtCoords({left: event.clientX, top: event.clientY}).pos
-          if (pos && !active || active.pos != pos) view.props.onAction({type: "setDropCursor", pos})
+          let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
+          if (pos && !active || active.pos != pos.pos) view.props.onAction({type: "setDropCursor", pos: pos.pos})
           scheduleRemoval(view)
           break
 
