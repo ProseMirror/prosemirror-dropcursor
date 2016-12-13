@@ -35,7 +35,6 @@ function dropCursor(options) {
           break
 
         case "dragleave":
-          console.log("drag leave", event.target, event.relatedTarget)
           if (event.target == view.content) view.props.onAction({type: "removeDropCursor"})
           break
         }
