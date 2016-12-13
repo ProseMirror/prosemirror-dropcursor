@@ -2,7 +2,15 @@ const {Plugin} = require("prosemirror-state")
 const {Decoration, DecorationSet} = require("prosemirror-view")
 
 function dropCursor(options) {
-  return new Plugin({
+  let timeout = null
+  function scheduleRemoval(view) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+    }, 1000)
+  }
+
+  let plugin = new Plugin({
     state: {
       init() { return null },
       applyAction(action, prev, state) {
@@ -18,6 +26,7 @@ function dropCursor(options) {
         case "dragover":
           let pos = view.posAtCoords({left: event.clientX, top: event.clientY}).pos
           if (!active || active.pos != pos) view.props.onAction({type: "setDropCursor", pos})
+          scheduleRemoval(view)
           break
 
         case "dragend":
@@ -26,6 +35,7 @@ function dropCursor(options) {
           break
 
         case "dragleave":
+          console.log("drag leave", event.target, event.relatedTarget)
           if (event.target == view.content) view.props.onAction({type: "removeDropCursor"})
           break
         }
@@ -37,6 +47,7 @@ function dropCursor(options) {
       }
     }
   })
+  return plugin
 }
 exports.dropCursor = dropCursor
 
