@@ -16,7 +16,7 @@
     "url": "git://github.com/prosemirror/prosemirror-dropcursor.git"
   },
   "devDependencies": {
-    "buble": "~0.14.0",
+    "buble": "^0.15.1",
     "rimraf": "^2.5.4"
   },
   "dependencies": {
