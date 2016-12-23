@@ -1,6 +1,9 @@
 const {Plugin} = require("prosemirror-state")
 const {Decoration, DecorationSet} = require("prosemirror-view")
 
+const gecko = typeof navigator != "undefined" && /gecko\/\d/i.test(navigator.userAgent)
+const linux = typeof navigator != "undefined" && /linux/i.test(navigator.platform)
+
 function dropCursor(options) {
   let timeout = null
   function scheduleRemoval(view) {
@@ -14,6 +17,10 @@ function dropCursor(options) {
     state: {
       init() { return null },
       applyAction(action, prev, state) {
+        // Firefox on Linux gets really confused an breaks dragging when we
+        // mess with the nodes around the target node during a drag. So
+        // disable this plugin there. See https://bugzilla.mozilla.org/show_bug.cgi?id=1323170
+        if (gecko && linux) return null
         if (action.type == "setDropCursor") return pluginStateFor(state, action.pos, options)
         if (action.type == "removeDropCursor") return null
         return prev
@@ -68,7 +75,7 @@ function pluginStateFor(state, pos, options) {
   if (!deco) {
     let node = document.createElement("span")
     node.textContent = "\u200b"
-    node.style.cssText = style(options, "left") + "; display: inline-block"
+    node.style.cssText = style(options, "left") + "; display: inline-block; pointer-events: none"
     deco = Decoration.widget(pos, node)
   }
   return {pos, deco: DecorationSet.create(state.doc, [deco])}
