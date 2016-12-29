@@ -29,7 +29,7 @@ function dropCursor(options) {
     props: {
       handleDOMEvents: {
         dragover(view, event) {
-          let active = this.getState(view.state)
+          let active = plugin.getState(view.state)
           let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
           if (pos && !active || active.pos != pos.pos) view.props.onAction({type: "setDropCursor", pos: pos.pos})
           scheduleRemoval(view)
@@ -37,12 +37,12 @@ function dropCursor(options) {
         },
 
         dragend(view) {
-          if (this.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+          if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
           return false
         },
 
         drop(view) {
-          if (this.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+          if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
           return false
         },
 
@@ -52,7 +52,7 @@ function dropCursor(options) {
         }
       },
       decorations(state) {
-        let active = this.getState(state)
+        let active = plugin.getState(state)
         return active && active.deco
       }
     }
