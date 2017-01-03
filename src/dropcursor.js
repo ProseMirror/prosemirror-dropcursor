@@ -5,25 +5,30 @@ const gecko = typeof navigator != "undefined" && /gecko\/\d/i.test(navigator.use
 const linux = typeof navigator != "undefined" && /linux/i.test(navigator.platform)
 
 function dropCursor(options) {
+  function dispatch(view, data) {
+    view.dispatch(view.state.tr.set(plugin, data))
+  }
+
   let timeout = null
   function scheduleRemoval(view) {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
-      if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+      if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
     }, 1000)
   }
 
   let plugin = new Plugin({
     state: {
       init() { return null },
-      applyAction(action, prev, state) {
+      apply(tr, prev, state) {
         // Firefox on Linux gets really confused an breaks dragging when we
         // mess with the nodes around the target node during a drag. So
         // disable this plugin there. See https://bugzilla.mozilla.org/show_bug.cgi?id=1323170
         if (gecko && linux) return null
-        if (action.type == "setDropCursor") return pluginStateFor(state, action.pos, options)
-        if (action.type == "removeDropCursor") return null
-        return prev
+        let command = tr.get(plugin)
+        if (!command) return prev
+        if (command.type == "set") return pluginStateFor(state, command.pos, options)
+        return null
       }
     },
     props: {
@@ -31,23 +36,23 @@ function dropCursor(options) {
         dragover(view, event) {
           let active = plugin.getState(view.state)
           let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
-          if (pos && !active || active.pos != pos.pos) view.props.onAction({type: "setDropCursor", pos: pos.pos})
+          if (pos && !active || active.pos != pos.pos) dispatch(view, {type: "setDropCursor", pos: pos.pos})
           scheduleRemoval(view)
           return false
         },
 
         dragend(view) {
-          if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+          if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
           return false
         },
 
         drop(view) {
-          if (plugin.getState(view.state)) view.props.onAction({type: "removeDropCursor"})
+          if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
           return false
         },
 
         dragleave(view, event) {
-          if (event.target == view.content) view.props.onAction({type: "removeDropCursor"})
+          if (event.target == view.content) dispatch(view, {type: "remove"})
           return false
         }
       },
