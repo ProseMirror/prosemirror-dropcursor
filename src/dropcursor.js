@@ -6,7 +6,7 @@ const linux = typeof navigator != "undefined" && /linux/i.test(navigator.platfor
 
 function dropCursor(options) {
   function dispatch(view, data) {
-    view.dispatch(view.state.tr.set(plugin, data))
+    view.dispatch(view.state.tr.setMeta(plugin, data))
   }
 
   let timeout = null
@@ -25,7 +25,7 @@ function dropCursor(options) {
         // mess with the nodes around the target node during a drag. So
         // disable this plugin there. See https://bugzilla.mozilla.org/show_bug.cgi?id=1323170
         if (gecko && linux) return null
-        let command = tr.get(plugin)
+        let command = tr.getMeta(plugin)
         if (!command) return prev
         if (command.type == "set") return pluginStateFor(state, command.pos, options)
         return null
