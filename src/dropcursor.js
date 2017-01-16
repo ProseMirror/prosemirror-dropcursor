@@ -36,7 +36,8 @@ function dropCursor(options) {
         dragover(view, event) {
           let active = plugin.getState(view.state)
           let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
-          if (pos && !active || active.pos != pos.pos) dispatch(view, {type: "setDropCursor", pos: pos.pos})
+          if (pos && (!active || active.pos != pos.pos))
+            dispatch(view, {type: "setDropCursor", pos: pos.pos})
           scheduleRemoval(view)
           return false
         },
