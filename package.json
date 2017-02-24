@@ -1,6 +1,6 @@
 {
   "name": "prosemirror-dropcursor",
-  "version": "0.17.2",
+  "version": "0.18.0",
   "description": "Drop cursor plugin for ProseMirror",
   "main": "dist/dropcursor.js",
   "license": "MIT",
@@ -20,8 +20,8 @@
     "rimraf": "^2.5.4"
   },
   "dependencies": {
-    "prosemirror-state": "^0.17.0",
-    "prosemirror-view": "^0.17.0"
+    "prosemirror-state": "^0.18.0",
+    "prosemirror-view": "^0.18.0"
   },
   "scripts": {
     "build": "rimraf dist && buble -i src -o dist",
