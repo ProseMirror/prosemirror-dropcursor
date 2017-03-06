@@ -75,7 +75,7 @@ function style(options, side) {
 
 function pluginStateFor(state, pos, options) {
   let $pos = state.doc.resolve(pos), deco
-  if (!$pos.parent.isTextblock) {
+  if (!$pos.parent.inlineContent) {
     let before, after
     if (before = $pos.nodeBefore)
       deco = Decoration.node(pos - before.nodeSize, pos, {nodeName: "div", style: style(options, "right")})
