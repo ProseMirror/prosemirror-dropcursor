@@ -28,5 +28,10 @@ Create a plugin that, when added to a ProseMirror instance, causes a
 decoration to show up at the drop position when something is dragged
 over the editor.
 
-Supports two options: `color` to set the color of the cursor (defaults
-to black) and `width` to set its with in pixels (defaults to 1).
+Options to customize decoration style:
+- `color` to set the color of the cursor (defaults to black)
+- `width` to set its with in pixels (defaults to 1)
+
+Option to define entirely custom decoration:
+- `decorate($pos: ResolvedPos) → ?Decoration` (defaults to builtin decoration)
+
