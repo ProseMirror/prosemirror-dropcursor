@@ -1,10 +1,10 @@
-const {Plugin} = require("prosemirror-state")
-const {Decoration, DecorationSet} = require("prosemirror-view")
+import {Plugin} from "prosemirror-state"
+import {Decoration, DecorationSet} from "prosemirror-view"
 
 const gecko = typeof navigator != "undefined" && /gecko\/\d/i.test(navigator.userAgent)
 const linux = typeof navigator != "undefined" && /linux/i.test(navigator.platform)
 
-function dropCursor(options) {
+export function dropCursor(options) {
   function dispatch(view, data) {
     view.dispatch(view.state.tr.setMeta(plugin, data))
   }
@@ -65,7 +65,6 @@ function dropCursor(options) {
   })
   return plugin
 }
-exports.dropCursor = dropCursor
 
 function style(options, side) {
   let width = (options && options.width) || 1
