@@ -36,8 +36,13 @@ export function dropCursor(options) {
         dragover(view, event) {
           let active = plugin.getState(view.state)
           let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
-          if (pos && (!active || active.pos != pos.pos))
-            dispatch(view, {type: "set", pos: pos.pos})
+          if (pos) {
+            let target = pos.pos
+            if (view.dragging)
+              target = dropPos(view.dragging.slice, view.state.doc.resolve(target))
+            if (!active || active.pos != target)
+              dispatch(view, {type: "set", pos: target})
+          }
           scheduleRemoval(view)
           return false
         },
@@ -88,4 +93,17 @@ function pluginStateFor(state, pos, options) {
     deco = Decoration.widget(pos, node)
   }
   return {pos, deco: DecorationSet.create(state.doc, [deco])}
+}
+
+function dropPos(slice, $pos) {
+  if (!slice || !slice.content.size) return $pos.pos
+  let content = slice.content
+  for (let i = 0; i < slice.openStart; i++) content = content.firstChild.content
+  for (let d = $pos.depth; d >= 0; d--) {
+    let bias = d == $pos.depth ? 0 : $pos.pos <= ($pos.start(d + 1) + $pos.end(d + 1)) / 2 ? -1 : 1
+    let insertPos = $pos.index(d) + (bias > 0 ? 1 : 0)
+    if ($pos.node(d).canReplace(insertPos, insertPos, content))
+      return bias == 0 ? $pos.pos : bias < 0 ? $pos.before(d + 1) : $pos.after(d + 1)
+  }
+  return $pos.pos
 }
