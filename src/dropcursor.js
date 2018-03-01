@@ -10,11 +10,11 @@ export function dropCursor(options) {
   }
 
   let timeout = null
-  function scheduleRemoval(view) {
+  function scheduleRemoval(view, time) {
     clearTimeout(timeout)
     timeout = setTimeout(() => {
       if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
-    }, 1000)
+    }, time)
   }
 
   let plugin = new Plugin({
@@ -25,7 +25,7 @@ export function dropCursor(options) {
         // mess with the nodes around the target node during a drag. So
         // disable this plugin there. See https://bugzilla.mozilla.org/show_bug.cgi?id=1323170
         if (gecko && linux) return null
-        let command = tr.getMeta(plugin)
+        let command = tr.getMeta("uiEvent") == "drop" ? {type: "remove"} : tr.getMeta(plugin)
         if (!command) return prev
         if (command.type == "set") return pluginStateFor(state, command.pos, options)
         return null
@@ -43,17 +43,17 @@ export function dropCursor(options) {
             if (!active || active.pos != target)
               dispatch(view, {type: "set", pos: target})
           }
-          scheduleRemoval(view)
+          scheduleRemoval(view, 5000)
           return false
         },
 
         dragend(view) {
-          if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
+          scheduleRemoval(view, 20)
           return false
         },
 
         drop(view) {
-          if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
+          scheduleRemoval(view, 20)
           return false
         },
 

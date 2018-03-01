@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "prosemirror-state": "^1.0.0",
-    "prosemirror-view": "^1.0.0"
+    "prosemirror-view": "^1.1.0"
   },
   "scripts": {
     "build": "rollup -c",
