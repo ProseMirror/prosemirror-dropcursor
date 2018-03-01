@@ -58,7 +58,7 @@ export function dropCursor(options) {
         },
 
         dragleave(view, event) {
-          if (event.target == view.dom) dispatch(view, {type: "remove"})
+          if (event.target == view.dom || !view.dom.contains(event.relatedTarget)) dispatch(view, {type: "remove"})
           return false
         }
       },
