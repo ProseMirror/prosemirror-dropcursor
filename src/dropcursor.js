@@ -1,6 +1,18 @@
 import {Plugin} from "prosemirror-state"
 import {dropPoint} from "prosemirror-transform"
 
+// :: (options: ?Object) → Plugin
+// Create a plugin that, when added to a ProseMirror instance,
+// causes a decoration to show up at the drop position when something
+// is dragged over the editor.
+//
+//   options::- These options are supported:
+//
+//     color::? string
+//     The color of the cursor. Defaults to `black`.
+//
+//     width::? number
+//     The precise width of the cursor in pixels. Defaults to 1.
 export function dropCursor(options = {}) {
   return new Plugin({
     view(editorView) { return new DropCursorView(editorView, options) }
