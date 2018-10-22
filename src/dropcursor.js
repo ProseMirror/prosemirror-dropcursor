@@ -1,6 +1,5 @@
 import {Plugin} from "prosemirror-state"
 import {dropPoint} from "prosemirror-transform"
-import {Decoration, DecorationSet} from "prosemirror-view"
 
 export function dropCursor(options = {}) {
   return new Plugin({
