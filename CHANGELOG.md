@@ -1,3 +1,13 @@
+## 1.1.0 (2018-10-22)
+
+### Bug fixes
+
+Fixes an issue where drop cursors changed line breaking, causing the content to jump around during dragging.
+
+### New features
+
+Between-blocks drop cursors are now shown as a horizontal line.
+
 ## 1.0.1 (2018-06-20)
 
 ### Bug fixes
