@@ -2,98 +2,105 @@ import {Plugin} from "prosemirror-state"
 import {dropPoint} from "prosemirror-transform"
 import {Decoration, DecorationSet} from "prosemirror-view"
 
-const gecko = typeof navigator != "undefined" && /gecko\/\d/i.test(navigator.userAgent)
-const linux = typeof navigator != "undefined" && /linux/i.test(navigator.platform)
+export function dropCursor(options = {}) {
+  return new Plugin({
+    view(editorView) { return new DropCursorView(editorView, options) }
+  })
+}
 
-export function dropCursor(options) {
-  function dispatch(view, data) {
-    view.dispatch(view.state.tr.setMeta(plugin, data))
+class DropCursorView {
+  constructor(editorView, options) {
+    this.editorView = editorView
+    this.width = options.width || 1
+    this.color = options.color || "black"
+    this.cursorPos = null
+    this.element = null
+    this.timeout = null
+
+    this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
+      let handler = e => this[name](e)
+      editorView.dom.addEventListener(name, handler)
+      return {name, handler}
+    })
   }
 
-  let timeout = null
-  function scheduleRemoval(view, time) {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => {
-      if (plugin.getState(view.state)) dispatch(view, {type: "remove"})
-    }, time)
+  destroy() {
+    this.handlers.forEach(({name, handler}) => this.editorView.dom.removeEventHandler(name, handler))
   }
 
-  let plugin = new Plugin({
-    state: {
-      init() { return null },
-      apply(tr, prev, state) {
-        // Firefox on Linux gets really confused an breaks dragging when we
-        // mess with the nodes around the target node during a drag. So
-        // disable this plugin there. See https://bugzilla.mozilla.org/show_bug.cgi?id=1323170
-        if (gecko && linux) return null
-        let command = tr.getMeta("uiEvent") == "drop" ? {type: "remove"} : tr.getMeta(plugin)
-        if (!command) return prev
-        if (command.type == "set") return pluginStateFor(state, command.pos, options)
-        return null
-      }
-    },
-    props: {
-      handleDOMEvents: {
-        dragover(view, event) {
-          let active = plugin.getState(view.state)
-          let pos = view.posAtCoords({left: event.clientX, top: event.clientY})
-          if (pos) {
-            let target = pos.pos
-            if (view.dragging && view.dragging.slice) {
-              target = dropPoint(view.state.doc, target, view.dragging.slice)
-              if (target == null) target = pos.pos
-            }
-            if (!active || active.pos != target)
-              dispatch(view, {type: "set", pos: target})
-          }
-          scheduleRemoval(view, 5000)
-          return false
-        },
+  update(editorView, prevState) {
+    if (this.cursorPos != null && prevState.doc != editorView.state.doc) this.updateOverlay()
+  }
 
-        dragend(view) {
-          scheduleRemoval(view, 20)
-          return false
-        },
+  setCursor(pos) {
+    if (pos == this.cursorPos) return
+    this.cursorPos = pos
+    if (pos == null) {
+      this.element.remove()
+      this.element = null
+    } else {
+      this.updateOverlay()
+    }
+  }
 
-        drop(view) {
-          scheduleRemoval(view, 20)
-          return false
-        },
-
-        dragleave(view, event) {
-          if (event.target == view.dom || !view.dom.contains(event.relatedTarget)) dispatch(view, {type: "remove"})
-          return false
-        }
-      },
-      decorations(state) {
-        let active = plugin.getState(state)
-        return active && active.deco
+  updateOverlay() {
+    let $pos = this.editorView.state.doc.resolve(this.cursorPos), rect
+    if (!$pos.parent.inlineContent) {
+      let before = $pos.nodeBefore, after = $pos.nodeAfter
+      if (before || after) {
+        let nodeRect = this.editorView.nodeDOM(this.cursorPos - (before ?  before.nodeSize : 0)).getBoundingClientRect()
+        let top = before ? nodeRect.bottom : nodeRect.top
+        if (before && after)
+          top = (top + this.editorView.nodeDOM(this.cursorPos).getBoundingClientRect().top) / 2
+        rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
       }
     }
-  })
-  return plugin
-}
+    if (!rect) {
+      let coords = this.editorView.coordsAtPos(this.cursorPos)
+      rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom}
+    }
 
-function style(options, side) {
-  let width = (options && options.width) || 1
-  let color = (options && options.color) || "black"
-  return `border-${side}: ${width}px solid ${color}; margin-${side}: -${width}px`
-}
+    let parent = this.editorView.dom.offsetParent
+    if (!this.element) {
+      this.element = parent.appendChild(document.createElement("div"))
+      this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
+    }
+    let parentRect = parent == document.body && getComputedStyle(parent).position == "static"
+        ? {left: -pageXOffset, top: -pageYOffset} : parent.getBoundingClientRect()
+    this.element.style.left = (rect.left - parentRect.left) + "px"
+    this.element.style.top = (rect.top - parentRect.top) + "px"
+    this.element.style.width = (rect.right - rect.left) + "px"
+    this.element.style.height = (rect.bottom - rect.top) + "px"
+  }
 
-function pluginStateFor(state, pos, options) {
-  let $pos = state.doc.resolve(pos), deco
-  if (!$pos.parent.inlineContent) {
-    let before, after
-    if (before = $pos.nodeBefore)
-      deco = Decoration.node(pos - before.nodeSize, pos, {nodeName: "div", style: style(options, "right")})
-    else if (after = $pos.nodeAfter)
-      deco = Decoration.node(pos, pos + after.nodeSize, {nodeName: "div", style: style(options, "left")})
+  scheduleRemoval(timeout) {
+    clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => this.setCursor(null), timeout)
   }
-  if (!deco) {
-    let node = document.createElement("span")
-    node.textContent = "\u200b"
-    node.style.cssText = style(options, "left") + "; display: inline-block; pointer-events: none"
-    deco = Decoration.widget(pos, node)
+
+  dragover(event) {
+    let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
+    if (pos) {
+      let target = pos.pos
+      if (this.editorView.dragging && this.editorView.dragging.slice) {
+        target = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
+        if (target == null) target = pos.pos
+      }
+      this.setCursor(target)
+      this.scheduleRemoval(5000)
+    }
   }
-  return {pos, deco: DecorationSet.create(state.doc, [deco])}
+
+  dragend() {
+    this.scheduleRemoval(20)
+  }
+
+  drop() {
+    this.scheduleRemoval(20)
+  }
+
+  dragleave(event) {
+    if (event.target == this.editorView.dom || !this.editorView.dom.contains(event.relatedTarget))
+      this.setCursor(null)
+  }
 }
