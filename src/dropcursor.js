@@ -24,7 +24,7 @@ class DropCursorView {
   }
 
   destroy() {
-    this.handlers.forEach(({name, handler}) => this.editorView.dom.removeEventHandler(name, handler))
+    this.handlers.forEach(({name, handler}) => this.editorView.dom.removeEventListener(name, handler))
   }
 
   update(editorView, prevState) {
