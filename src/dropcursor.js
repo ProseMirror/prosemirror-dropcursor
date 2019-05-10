@@ -59,7 +59,7 @@ class DropCursorView {
       rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom}
     }
 
-    let parent = this.editorView.dom.offsetParent
+    let parent = this.editorView.dom.offsetParent || this.editorView.dom.parentNode
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
       this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
