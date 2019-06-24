@@ -79,7 +79,7 @@ class DropCursorView {
 
   dragover(event) {
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
-    if (pos) {
+    if (pos && !this.editorView.someProp("editable", editable => editable(this.editorView.state) === false)) {
       let target = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
         target = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
