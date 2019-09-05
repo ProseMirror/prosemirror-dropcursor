@@ -35,7 +35,7 @@ class DropCursorView {
     if (pos == this.cursorPos) return
     this.cursorPos = pos
     if (pos == null) {
-      this.element.remove()
+      this.element.parentNode.removeChild(this.element)
       this.element = null
     } else {
       this.updateOverlay()
