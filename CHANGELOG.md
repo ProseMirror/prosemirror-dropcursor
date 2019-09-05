@@ -1,3 +1,11 @@
+## 1.1.2 (2019-09-05)
+
+### Bug fixes
+
+Fix crash on IE11 due to using a method that platform doesn't support. Don't show a drop cursor when the view isn't editable
+
+The drop cursor will no longer show up when the view isn't editable.
+
 ## 1.1.1 (2018-10-23)
 
 ### Bug fixes
