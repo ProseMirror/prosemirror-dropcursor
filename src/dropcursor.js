@@ -76,7 +76,7 @@ class DropCursorView {
       this.element = parent.appendChild(document.createElement("div"))
       this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
     }
-    let parentRect = parent == document.body && getComputedStyle(parent).position == "static"
+    let parentRect = !parent || parent == document.body && getComputedStyle(parent).position == "static"
         ? {left: -pageXOffset, top: -pageYOffset} : parent.getBoundingClientRect()
     this.element.style.left = (rect.left - parentRect.left) + "px"
     this.element.style.top = (rect.top - parentRect.top) + "px"
