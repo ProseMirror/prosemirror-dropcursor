@@ -24,6 +24,7 @@ class DropCursorView {
     this.editorView = editorView
     this.width = options.width || 1
     this.color = options.color || "black"
+    this.class = options.class || null
     this.cursorPos = null
     this.element = null
     this.timeout = null
@@ -74,6 +75,9 @@ class DropCursorView {
     let parent = this.editorView.dom.offsetParent
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
+      if (this.class) {
+        this.element.className = this.class
+      }
       this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
     }
     let parentRect = !parent || parent == document.body && getComputedStyle(parent).position == "static"
