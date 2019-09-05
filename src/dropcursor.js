@@ -8,11 +8,14 @@ import {dropPoint} from "prosemirror-transform"
 //
 //   options::- These options are supported:
 //
-//     color::? string
+//     color:: ?string
 //     The color of the cursor. Defaults to `black`.
 //
-//     width::? number
+//     width:: ?number
 //     The precise width of the cursor in pixels. Defaults to 1.
+//
+//     class:: ?string
+//     A CSS class name to add to the cursor element.
 export function dropCursor(options = {}) {
   return new Plugin({
     view(editorView) { return new DropCursorView(editorView, options) }
@@ -24,7 +27,7 @@ class DropCursorView {
     this.editorView = editorView
     this.width = options.width || 1
     this.color = options.color || "black"
-    this.class = options.class || null
+    this.class = options.class
     this.cursorPos = null
     this.element = null
     this.timeout = null
@@ -75,9 +78,7 @@ class DropCursorView {
     let parent = this.editorView.dom.offsetParent
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
-      if (this.class) {
-        this.element.className = this.class
-      }
+      if (this.class) this.element.className = this.class
       this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
     }
     let parentRect = !parent || parent == document.body && getComputedStyle(parent).position == "static"
