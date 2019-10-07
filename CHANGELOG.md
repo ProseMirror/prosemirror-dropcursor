@@ -1,3 +1,9 @@
+## 1.2.0 (2019-10-07)
+
+### New features
+
+Added option to specify a css class for the drop cursor.
+
 ## 1.1.2 (2019-09-05)
 
 ### Bug fixes
