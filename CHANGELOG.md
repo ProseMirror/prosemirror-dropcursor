@@ -1,3 +1,9 @@
+## 1.2.0 (2019-10-08)
+
+### New features
+
+`dropCursor` now takes a new option, `class`, to set the CSS class name of the cursor element. Add class option to in-code docs
+
 ## 1.1.2 (2019-09-05)
 
 ### Bug fixes
