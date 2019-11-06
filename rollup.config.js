@@ -1,7 +1,12 @@
-module.exports = {
-  input: "./src/dropcursor.js",
-  output: {format: "cjs", file: "dist/dropcursor.js"},
-  sourcemap: true,
-  plugins: [require("rollup-plugin-buble")()],
+import buble from '@rollup/plugin-buble'
+
+export default {
+  input: 'src/dropcursor.js',
+  output: {
+    dir: 'dist',
+    format: 'cjs',
+    sourcemap: true
+  },
+  plugins: [buble()],
   external(id) { return !/^[\.\/]/.test(id) }
 }
