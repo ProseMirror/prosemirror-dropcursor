@@ -1,7 +1,7 @@
 import buble from '@rollup/plugin-buble'
 
 export default {
-  input: 'src/dropcursor.js',
+  input: './src/dropcursor.js',
   output: {
     dir: 'dist',
     format: 'cjs',
