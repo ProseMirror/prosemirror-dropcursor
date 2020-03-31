@@ -1,6 +1,6 @@
 # prosemirror-dropcursor
 
-[ [**WEBSITE**](https://prosemirror.net) | [**ISSUES**](https://github.com/prosemirror/prosemirror-dropcursor/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**GITTER**](https://gitter.im/ProseMirror/prosemirror) ]
+[ [**WEBSITE**](https://prosemirror.net) | [**ISSUES**](https://github.com/prosemirror/prosemirror-dropcursor/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**GITTER**](https://gitter.im/ProseMirror/prosemirror) | [**CHANGELOG**](https://github.com/ProseMirror/prosemirror-dropcursor/blob/master/CHANGELOG.md) ]
 
 This is a non-core example module for [ProseMirror](https://prosemirror.net).
 ProseMirror is a well-behaved rich semantic content editor based on
