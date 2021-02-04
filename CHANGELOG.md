@@ -1,3 +1,9 @@
+## 1.3.3 (2021-02-04)
+
+### Bug fixes
+
+Fix drop cursor positioning when the editor's `offsetParent` has been scrolled.
+
 ## 1.3.2 (2019-11-20)
 
 ### Bug fixes
