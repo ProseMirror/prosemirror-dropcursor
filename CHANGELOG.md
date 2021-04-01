@@ -1,3 +1,9 @@
+## 1.3.4 (2021-04-01)
+
+### Bug fixes
+
+Hide the drop cursor when `dropPoint` doesn't return a position.
+
 ## 1.3.3 (2021-02-04)
 
 ### Bug fixes
