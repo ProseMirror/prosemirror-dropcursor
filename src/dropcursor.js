@@ -44,7 +44,10 @@ class DropCursorView {
   }
 
   update(editorView, prevState) {
-    if (this.cursorPos != null && prevState.doc != editorView.state.doc) this.updateOverlay()
+    if (this.cursorPos != null && prevState.doc != editorView.state.doc) {
+      if (this.cursorPos > editorView.state.doc.content.size) this.setCursor(null)
+      else this.updateOverlay()
+    }
   }
 
   setCursor(pos) {
