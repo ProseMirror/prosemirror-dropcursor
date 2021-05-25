@@ -1,3 +1,9 @@
+## 1.3.5 (2021-05-25)
+
+### Bug fixes
+
+Avoid a crash that happened when the document shrank during dragging.
+
 ## 1.3.4 (2021-04-01)
 
 ### Bug fixes
