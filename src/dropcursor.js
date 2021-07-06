@@ -28,7 +28,6 @@ class DropCursorView {
     this.width = options.width || 1
     this.color = options.color || "black"
     this.class = options.class
-    this.disableClass = options.disableClass || 'disable-dropcursor'
     this.cursorPos = null
     this.element = null
     this.timeout = null
@@ -107,9 +106,13 @@ class DropCursorView {
 
   dragover(event) {
     if (!this.editorView.editable) return
-    const isDisabled = event.path.some(el => el.className && el.className.includes(this.disableClass))
-    if (isDisabled) return
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
+    
+    // Disables dropcursor when Node disableDropCursor property is true
+    // and is not a draggable Node within the document
+    const node = this.editorView.state.doc.nodeAt(pos.pos);
+    if (node && node.type.spec.disableDropCursor && !this.editorView.dragging) return;
+    
     if (pos) {
       let target = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
