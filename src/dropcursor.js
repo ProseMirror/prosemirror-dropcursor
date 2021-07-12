@@ -28,7 +28,6 @@ class DropCursorView {
     this.width = options.width || 1
     this.color = options.color || "black"
     this.class = options.class
-    this.predicate = options.predicate || function () { return true }
     this.cursorPos = null
     this.element = null
     this.timeout = null
@@ -109,8 +108,11 @@ class DropCursorView {
     if (!this.editorView.editable) return
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
     
-    const node = this.editorView.state.doc.nodeAt(pos.inside === -1 ? pos.pos : pos.inside)
-    if (node && node.type.spec.disableDropCursor && this.predicate()) return
+    const node = this.editorView.state.doc.nodeAt(pos.inside === -1 ? pos.pos : pos.inside);
+    const disableDropCursor = (node && node.type.spec.disableDropCursor) ? node.type.spec.disableDropCursor : false;
+    const isDropCursorDisabled = typeof disableDropCursor === 'function' ? disableDropCursor(this.editorView) : disableDropCursor;
+
+    if (isDropCursorDisabled) return;
     
     if (pos) {
       let target = pos.pos
