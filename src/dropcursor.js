@@ -27,6 +27,23 @@ export function dropCursor(options = {}) {
   })
 }
 
+function getDisableDropCursor(view, pos) {
+  if (!pos || pos.pos < 0) {
+    return
+  }
+
+  let resolvedPos = pos && pos.pos >= 0 && view.state.doc.resolve(pos.pos)
+  let depth = resolvedPos.depth
+
+  while (depth > 0) {
+    const node = resolvedPos.node(depth)
+    if (node && node.type.spec.disableDropCursor) {
+      return node.type.spec.disableDropCursor
+    }
+    depth--
+  }
+}
+
 class DropCursorView {
   constructor(editorView, options) {
     this.editorView = editorView
@@ -113,8 +130,7 @@ class DropCursorView {
     if (!this.editorView.editable) return
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
 
-    let node = pos && pos.inside >= 0 && this.editorView.state.doc.nodeAt(pos.inside)
-    let disableDropCursor = node && node.type.spec.disableDropCursor
+    let disableDropCursor = getDisableDropCursor(this.editorView, pos)
     let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos) : disableDropCursor
 
     if (pos && !disabled) {
