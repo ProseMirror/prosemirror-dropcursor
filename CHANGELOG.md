@@ -1,3 +1,9 @@
+## 1.4.0 (2021-11-11)
+
+### New features
+
+Add support for a `disableDropCursor` property on node specs, which can be used to turn off the drop cursor inside such nodes.
+
 ## 1.3.5 (2021-05-25)
 
 ### Bug fixes
