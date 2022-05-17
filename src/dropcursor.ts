@@ -1,44 +1,48 @@
-import {Plugin} from "prosemirror-state"
+import {Plugin, EditorState} from "prosemirror-state"
+import {EditorView} from "prosemirror-view"
 import {dropPoint} from "prosemirror-transform"
 
-// :: (options: ?Object) → Plugin
-// Create a plugin that, when added to a ProseMirror instance,
-// causes a decoration to show up at the drop position when something
-// is dragged over the editor.
-//
-// Nodes may add a `disableDropCursor` property to their spec to
-// control the showing of a drop cursor inside them. This may be a
-// boolean or a function, which will be called with a view and a
-// position, and should return a boolean.
-//
-//   options::- These options are supported:
-//
-//     color:: ?string
-//     The color of the cursor. Defaults to `black`.
-//
-//     width:: ?number
-//     The precise width of the cursor in pixels. Defaults to 1.
-//
-//     class:: ?string
-//     A CSS class name to add to the cursor element.
-export function dropCursor(options = {}) {
+interface DropCursorOptions {
+  /// The color of the cursor. Defaults to `black`.
+  color?: string
+
+  /// The precise width of the cursor in pixels. Defaults to 1.
+  width?: number
+
+  /// A CSS class name to add to the cursor element.
+  class?: string
+}
+
+/// Create a plugin that, when added to a ProseMirror instance,
+/// causes a decoration to show up at the drop position when something
+/// is dragged over the editor.
+///
+/// Nodes may add a `disableDropCursor` property to their spec to
+/// control the showing of a drop cursor inside them. This may be a
+/// boolean or a function, which will be called with a view and a
+/// position, and should return a boolean.
+export function dropCursor(options: DropCursorOptions = {}) {
   return new Plugin({
     view(editorView) { return new DropCursorView(editorView, options) }
   })
 }
 
 class DropCursorView {
-  constructor(editorView, options) {
-    this.editorView = editorView
+  width: number
+  color: string
+  class: string | undefined
+  cursorPos: number | null = null
+  element: HTMLElement | null = null
+  timeout: number = -1
+  handlers: {name: string, handler: (event: Event) => void}[]
+
+  constructor(readonly editorView: EditorView, options: DropCursorOptions) {
     this.width = options.width || 1
     this.color = options.color || "black"
     this.class = options.class
-    this.cursorPos = null
-    this.element = null
-    this.timeout = null
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
-      let handler = e => this[name](e)
+      let handler = (e: Event) => { (this as any)[name](e) }
       editorView.dom.addEventListener(name, handler)
       return {name, handler}
     })
@@ -48,18 +52,18 @@ class DropCursorView {
     this.handlers.forEach(({name, handler}) => this.editorView.dom.removeEventListener(name, handler))
   }
 
-  update(editorView, prevState) {
+  update(editorView: EditorView, prevState: EditorState) {
     if (this.cursorPos != null && prevState.doc != editorView.state.doc) {
       if (this.cursorPos > editorView.state.doc.content.size) this.setCursor(null)
       else this.updateOverlay()
     }
   }
 
-  setCursor(pos) {
+  setCursor(pos: number | null) {
     if (pos == this.cursorPos) return
     this.cursorPos = pos
     if (pos == null) {
-      this.element.parentNode.removeChild(this.element)
+      this.element!.parentNode!.removeChild(this.element!)
       this.element = null
     } else {
       this.updateOverlay()
@@ -67,23 +71,24 @@ class DropCursorView {
   }
 
   updateOverlay() {
-    let $pos = this.editorView.state.doc.resolve(this.cursorPos), rect
+    let $pos = this.editorView.state.doc.resolve(this.cursorPos!), rect
     if (!$pos.parent.inlineContent) {
       let before = $pos.nodeBefore, after = $pos.nodeAfter
       if (before || after) {
-        let nodeRect = this.editorView.nodeDOM(this.cursorPos - (before ?  before.nodeSize : 0)).getBoundingClientRect()
+        let nodeRect = (this.editorView.nodeDOM(this.cursorPos! - (before ?  before.nodeSize : 0)) as HTMLElement)
+                         .getBoundingClientRect()
         let top = before ? nodeRect.bottom : nodeRect.top
         if (before && after)
-          top = (top + this.editorView.nodeDOM(this.cursorPos).getBoundingClientRect().top) / 2
+          top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
         rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
       }
     }
     if (!rect) {
-      let coords = this.editorView.coordsAtPos(this.cursorPos)
+      let coords = this.editorView.coordsAtPos(this.cursorPos!)
       rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom}
     }
 
-    let parent = this.editorView.dom.offsetParent
+    let parent = this.editorView.dom.offsetParent!
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
       if (this.class) this.element.className = this.class
@@ -104,21 +109,21 @@ class DropCursorView {
     this.element.style.height = (rect.bottom - rect.top) + "px"
   }
 
-  scheduleRemoval(timeout) {
+  scheduleRemoval(timeout: number) {
     clearTimeout(this.timeout)
     this.timeout = setTimeout(() => this.setCursor(null), timeout)
   }
 
-  dragover(event) {
+  dragover(event: DragEvent) {
     if (!this.editorView.editable) return
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
 
     let node = pos && pos.inside >= 0 && this.editorView.state.doc.nodeAt(pos.inside)
-    let disableDropCursor = node && node.type.spec.disableDropCursor
+    let disableDropCursor = node && (node.type.spec as any).disableDropCursor
     let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos) : disableDropCursor
 
     if (pos && !disabled) {
-      let target = pos.pos
+      let target: number | null = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
         target = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
         if (target == null) return this.setCursor(null)
@@ -136,8 +141,8 @@ class DropCursorView {
     this.scheduleRemoval(20)
   }
 
-  dragleave(event) {
-    if (event.target == this.editorView.dom || !this.editorView.dom.contains(event.relatedTarget))
+  dragleave(event: DragEvent) {
+    if (event.target == this.editorView.dom || !this.editorView.dom.contains((event as any).relatedTarget))
       this.setCursor(null)
   }
 }
