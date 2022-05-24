@@ -21,7 +21,7 @@ interface DropCursorOptions {
 /// control the showing of a drop cursor inside them. This may be a
 /// boolean or a function, which will be called with a view and a
 /// position, and should return a boolean.
-export function dropCursor(options: DropCursorOptions = {}) {
+export function dropCursor(options: DropCursorOptions = {}): Plugin {
   return new Plugin({
     view(editorView) { return new DropCursorView(editorView, options) }
   })
