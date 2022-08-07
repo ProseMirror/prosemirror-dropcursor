@@ -35,8 +35,8 @@ to communication around the project.
 
    Nodes may add a `disableDropCursor` property to their spec to
    control the showing of a drop cursor inside them. This may be a
-   boolean or a function, which will be called with a view and a
-   position, and should return a boolean.
+   boolean or a function, which will be called with a view, a
+   position, and the DragEvent, and should return a boolean.
 
     * **`options`**
 
