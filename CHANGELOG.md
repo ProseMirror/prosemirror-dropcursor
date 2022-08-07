@@ -1,3 +1,9 @@
+## 1.6.0 (2022-08-07)
+
+### New features
+
+`disableDropCursor` is now passed the dragover event as 3rd argument.
+
 ## 1.5.0 (2022-05-30)
 
 ### New features
