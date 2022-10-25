@@ -1,3 +1,9 @@
+## 1.6.1 (2022-10-25)
+
+### Bug fixes
+
+Fix a crash when there's no DOM for the node next to the drag position.
+
 ## 1.6.0 (2022-08-07)
 
 ### New features
