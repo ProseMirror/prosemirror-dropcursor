@@ -75,12 +75,14 @@ class DropCursorView {
     if (!$pos.parent.inlineContent) {
       let before = $pos.nodeBefore, after = $pos.nodeAfter
       if (before || after) {
-        let nodeRect = (this.editorView.nodeDOM(this.cursorPos! - (before ?  before.nodeSize : 0)) as HTMLElement)
-                         .getBoundingClientRect()
-        let top = before ? nodeRect.bottom : nodeRect.top
-        if (before && after)
-          top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
-        rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
+        let node = this.editorView.nodeDOM(this.cursorPos! - (before ?  before.nodeSize : 0))
+        if (node) {
+          let nodeRect = (node as HTMLElement).getBoundingClientRect()
+          let top = before ? nodeRect.bottom : nodeRect.top
+          if (before && after)
+            top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
+          rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
+        }
       }
     }
     if (!rect) {
