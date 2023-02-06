@@ -105,10 +105,20 @@ class DropCursorView {
       parentLeft = rect.left - parent.scrollLeft
       parentTop = rect.top - parent.scrollTop
     }
+    
+    const width = rect.right - rect.left
+    const height = rect.bottom - rect.top
+
+    if(this.class) {
+      this.element.classList.add(
+        width > height ? "block" : "inline"
+      )
+    }
+
     this.element.style.left = (rect.left - parentLeft) + "px"
     this.element.style.top = (rect.top - parentTop) + "px"
-    this.element.style.width = (rect.right - rect.left) + "px"
-    this.element.style.height = (rect.bottom - rect.top) + "px"
+    this.element.style.width = width + "px"
+    this.element.style.height = height + "px"
   }
 
   scheduleRemoval(timeout: number) {
