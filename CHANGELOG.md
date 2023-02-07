@@ -1,3 +1,9 @@
+## 1.7.0 (2023-02-07)
+
+### New features
+
+The drop cursor element now has a `prosemirror-blockcursor-block`/`inline` CSS class depending on whether it is in a block or inline position.
+
 ## 1.6.1 (2022-10-25)
 
 ### Bug fixes
