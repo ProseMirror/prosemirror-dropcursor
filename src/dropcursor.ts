@@ -71,8 +71,9 @@ class DropCursorView {
   }
 
   updateOverlay() {
-    let $pos = this.editorView.state.doc.resolve(this.cursorPos!), rect
-    if (!$pos.parent.inlineContent) {
+    let $pos = this.editorView.state.doc.resolve(this.cursorPos!)
+    let isBlock = !$pos.parent.inlineContent, rect
+    if (isBlock) {
       let before = $pos.nodeBefore, after = $pos.nodeAfter
       if (before || after) {
         let node = this.editorView.nodeDOM(this.cursorPos! - (before ?  before.nodeSize : 0))
@@ -96,6 +97,8 @@ class DropCursorView {
       if (this.class) this.element.className = this.class
       this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
     }
+    this.element.classList.toggle("prosemirror-dropcursor-block", isBlock)
+    this.element.classList.toggle("prosemirror-dropcursor-inline", !isBlock)
     let parentLeft, parentTop
     if (!parent || parent == document.body && getComputedStyle(parent).position == "static") {
       parentLeft = -pageXOffset
