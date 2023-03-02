@@ -1,3 +1,9 @@
+## 1.7.1 (2023-03-02)
+
+### Bug fixes
+
+Don't hide the drop cursor when no valid drop point can be found below the pointer.
+
 ## 1.7.0 (2023-02-07)
 
 ### New features
