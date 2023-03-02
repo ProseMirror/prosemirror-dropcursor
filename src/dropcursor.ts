@@ -130,8 +130,8 @@ class DropCursorView {
     if (pos && !disabled) {
       let target: number | null = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
-        target = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
-        if (target == null) return this.setCursor(null)
+        let point = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
+        if (point != null) target = point
       }
       this.setCursor(target)
       this.scheduleRemoval(5000)
