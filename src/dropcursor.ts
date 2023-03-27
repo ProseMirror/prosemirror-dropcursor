@@ -3,8 +3,8 @@ import {EditorView} from "prosemirror-view"
 import {dropPoint} from "prosemirror-transform"
 
 interface DropCursorOptions {
-  /// The color of the cursor. Defaults to `black`. Use `null` to apply no color and rely only on class.
-  color?: string | null
+  /// The color of the cursor. Defaults to `black`. Use `false` to apply no color and rely only on class.
+  color?: string | false
 
   /// The precise width of the cursor in pixels. Defaults to 1.
   width?: number
@@ -38,7 +38,7 @@ class DropCursorView {
 
   constructor(readonly editorView: EditorView, options: DropCursorOptions) {
     this.width = options.width ?? 1
-    this.color = options.color === null ? undefined : (options.color || "black")
+    this.color = options.color === false ? undefined : (options.color || "black")
     this.class = options.class
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
