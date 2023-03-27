@@ -3,8 +3,8 @@ import {EditorView} from "prosemirror-view"
 import {dropPoint} from "prosemirror-transform"
 
 interface DropCursorOptions {
-  /// The color of the cursor. Defaults to `black`.
-  color?: string
+  /// The color of the cursor. Defaults to `black`. Use `false` to apply no color and rely only on class.
+  color?: string | false
 
   /// The precise width of the cursor in pixels. Defaults to 1.
   width?: number
@@ -29,7 +29,7 @@ export function dropCursor(options: DropCursorOptions = {}): Plugin {
 
 class DropCursorView {
   width: number
-  color: string
+  color: string | undefined
   class: string | undefined
   cursorPos: number | null = null
   element: HTMLElement | null = null
@@ -37,8 +37,8 @@ class DropCursorView {
   handlers: {name: string, handler: (event: Event) => void}[]
 
   constructor(readonly editorView: EditorView, options: DropCursorOptions) {
-    this.width = options.width || 1
-    this.color = options.color || "black"
+    this.width = options.width ?? 1
+    this.color = options.color === false ? undefined : (options.color || "black")
     this.class = options.class
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
@@ -95,7 +95,10 @@ class DropCursorView {
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
       if (this.class) this.element.className = this.class
-      this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none; background-color: " + this.color
+      this.element.style.cssText = "position: absolute; z-index: 50; pointer-events: none;"
+      if (this.color) {
+        this.element.style.backgroundColor = this.color
+      }
     }
     this.element.classList.toggle("prosemirror-dropcursor-block", isBlock)
     this.element.classList.toggle("prosemirror-dropcursor-inline", !isBlock)
