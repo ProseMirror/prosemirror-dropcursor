@@ -1,3 +1,9 @@
+## 1.8.0 (2023-03-27)
+
+### New features
+
+If the `color` option is set to `false`, the library will not assign an explicit color to the cursor.
+
 ## 1.7.1 (2023-03-02)
 
 ### Bug fixes
