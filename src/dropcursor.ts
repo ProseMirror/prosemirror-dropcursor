@@ -11,6 +11,9 @@ interface DropCursorOptions {
 
   /// A CSS class name to add to the cursor element.
   class?: string
+
+  /// The parentScale addresses misaligned cursor during dragging caused by non-1 transform.scale of the editor's parent component. Defaults to 1.
+  parentScale?: number | (() => number)
 }
 
 /// Create a plugin that, when added to a ProseMirror instance,
@@ -31,6 +34,7 @@ class DropCursorView {
   width: number
   color: string | undefined
   class: string | undefined
+  parentScale: number | (() => number)
   cursorPos: number | null = null
   element: HTMLElement | null = null
   timeout: number = -1
@@ -40,6 +44,7 @@ class DropCursorView {
     this.width = options.width ?? 1
     this.color = options.color === false ? undefined : (options.color || "black")
     this.class = options.class
+    this.parentScale = options.parentScale ?? 1;
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
       let handler = (e: Event) => { (this as any)[name](e) }
@@ -111,10 +116,14 @@ class DropCursorView {
       parentLeft = rect.left - parent.scrollLeft
       parentTop = rect.top - parent.scrollTop
     }
-    this.element.style.left = (rect.left - parentLeft) + "px"
-    this.element.style.top = (rect.top - parentTop) + "px"
-    this.element.style.width = (rect.right - rect.left) + "px"
-    this.element.style.height = (rect.bottom - rect.top) + "px"
+
+    const scale: number = typeof this.parentScale === "number" ? this.parentScale : this.parentScale();
+    const elementWidth = (rect.right - rect.left) / (isBlock ? scale : 1);
+    const elementHeight = (rect.bottom - rect.top) / (!isBlock ? scale : 1);
+    this.element.style.width = elementWidth + "px"
+    this.element.style.height = elementHeight + "px"
+    this.element.style.left = (rect.left - (!isBlock ? (elementWidth / 2) * (scale - 1) : 0) - parentLeft) / scale + "px"
+    this.element.style.top = (rect.top - (isBlock ? (elementHeight / 2) * (scale - 1) : 0) - parentTop) / scale + "px"
   }
 
   scheduleRemoval(timeout: number) {

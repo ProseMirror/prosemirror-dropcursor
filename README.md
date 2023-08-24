@@ -48,3 +48,6 @@ to communication around the project.
 
        * **`class`**`?: string`\
          A CSS class name to add to the cursor element.
+      
+       * **`parentScale`**`?: number | (() => number)`\
+         The parentScale addresses misaligned cursor during dragging caused by non-1 transform.scale of the editor's parent component. Defaults to 1.
