@@ -73,6 +73,8 @@ class DropCursorView {
   updateOverlay() {
     let $pos = this.editorView.state.doc.resolve(this.cursorPos!)
     let isBlock = !$pos.parent.inlineContent, rect
+    let editorDOM = this.editorView.dom, editorRect = editorDOM.getBoundingClientRect()
+    let scaleX = editorRect.width / editorDOM.offsetWidth, scaleY = editorRect.height / editorDOM.offsetHeight
     if (isBlock) {
       let before = $pos.nodeBefore, after = $pos.nodeAfter
       if (before || after) {
@@ -82,16 +84,18 @@ class DropCursorView {
           let top = before ? nodeRect.bottom : nodeRect.top
           if (before && after)
             top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
-          rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
+          let halfWidth = (this.width / 2) / scaleY
+          rect = {left: nodeRect.left, right: nodeRect.right, top: top - halfWidth, bottom: top + halfWidth}
         }
       }
     }
     if (!rect) {
       let coords = this.editorView.coordsAtPos(this.cursorPos!)
-      rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom}
+      let halfWidth = (this.width / 2) / scaleX
+      rect = {left: coords.left - halfWidth, right: coords.left + halfWidth, top: coords.top, bottom: coords.bottom}
     }
 
-    let parent = this.editorView.dom.offsetParent!
+    let parent = this.editorView.dom.offsetParent as HTMLElement
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
       if (this.class) this.element.className = this.class
@@ -108,13 +112,14 @@ class DropCursorView {
       parentTop = -pageYOffset
     } else {
       let rect = parent.getBoundingClientRect()
-      parentLeft = rect.left - parent.scrollLeft
-      parentTop = rect.top - parent.scrollTop
+      let parentScaleX = rect.width / parent.offsetWidth, parentScaleY = rect.height / parent.offsetHeight
+      parentLeft = rect.left - parent.scrollLeft * parentScaleX
+      parentTop = rect.top - parent.scrollTop * parentScaleY
     }
-    this.element.style.left = (rect.left - parentLeft) + "px"
-    this.element.style.top = (rect.top - parentTop) + "px"
-    this.element.style.width = (rect.right - rect.left) + "px"
-    this.element.style.height = (rect.bottom - rect.top) + "px"
+    this.element.style.left = (rect.left - parentLeft) / scaleX + "px"
+    this.element.style.top = (rect.top - parentTop) / scaleY + "px"
+    this.element.style.width = (rect.right - rect.left) / scaleX + "px"
+    this.element.style.height = (rect.bottom - rect.top) / scaleY + "px"
   }
 
   scheduleRemoval(timeout: number) {
