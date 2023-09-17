@@ -84,18 +84,16 @@ class DropCursorView {
           let top = before ? nodeRect.bottom : nodeRect.top
           if (before && after)
             top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
-          let halfWidth = (this.width / 2) / scaleY
-          rect = {left: nodeRect.left, right: nodeRect.right, top: top - halfWidth, bottom: top + halfWidth}
+          rect = {left: nodeRect.left, right: nodeRect.right, top: top - this.width / 2, bottom: top + this.width / 2}
         }
       }
     }
     if (!rect) {
       let coords = this.editorView.coordsAtPos(this.cursorPos!)
-      let halfWidth = (this.width / 2) / scaleX
-      rect = {left: coords.left - halfWidth, right: coords.left + halfWidth, top: coords.top, bottom: coords.bottom}
+      rect = {left: coords.left - this.width / 2, right: coords.left + this.width / 2, top: coords.top, bottom: coords.bottom}
     }
 
-    let parent = this.editorView.dom.offsetParent as HTMLElement
+    let parent = this.editorView.dom.offsetParent!
     if (!this.element) {
       this.element = parent.appendChild(document.createElement("div"))
       if (this.class) this.element.className = this.class
@@ -112,14 +110,16 @@ class DropCursorView {
       parentTop = -pageYOffset
     } else {
       let rect = parent.getBoundingClientRect()
-      let parentScaleX = rect.width / parent.offsetWidth, parentScaleY = rect.height / parent.offsetHeight
-      parentLeft = rect.left - parent.scrollLeft * parentScaleX
-      parentTop = rect.top - parent.scrollTop * parentScaleY
+      parentLeft = rect.left - parent.scrollLeft
+      parentTop = rect.top - parent.scrollTop
     }
-    this.element.style.left = (rect.left - parentLeft) / scaleX + "px"
-    this.element.style.top = (rect.top - parentTop) / scaleY + "px"
-    this.element.style.width = (rect.right - rect.left) / scaleX + "px"
-    this.element.style.height = (rect.bottom - rect.top) / scaleY + "px"
+
+    const elementWidth = (rect.right - rect.left) / (isBlock ? scaleX : 1);
+    const elementHeight = (rect.bottom - rect.top) / (!isBlock ? scaleY : 1);
+    this.element.style.width = elementWidth + "px"
+    this.element.style.height = elementHeight + "px"
+    this.element.style.left = (rect.left - (!isBlock ? (elementWidth / 2) * (scaleX - 1) : 0) - parentLeft) / scaleY + "px"
+    this.element.style.top = (rect.top - (isBlock ? (elementHeight / 2) * (scaleY - 1) : 0) - parentTop) / scaleY + "px"
   }
 
   scheduleRemoval(timeout: number) {
