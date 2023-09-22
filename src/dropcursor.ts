@@ -84,14 +84,14 @@ class DropCursorView {
           let top = before ? nodeRect.bottom : nodeRect.top
           if (before && after)
             top = (top + (this.editorView.nodeDOM(this.cursorPos!) as HTMLElement).getBoundingClientRect().top) / 2
-          let halfWidth = (this.width / 2) * (isBlock ? scaleY : 1 / scaleY);
+          let halfWidth = (this.width / 2) * scaleY;
           rect = {left: nodeRect.left, right: nodeRect.right, top: top - halfWidth, bottom: top + halfWidth}
         }
       }
     }
     if (!rect) {
       let coords = this.editorView.coordsAtPos(this.cursorPos!)
-      let halfWidth = (this.width / 2) * (!isBlock ? scaleX : 1 / scaleX);
+      let halfWidth = (this.width / 2) * scaleX;
       rect = {left: coords.left - halfWidth, right: coords.left + halfWidth, top: coords.top, bottom: coords.bottom}
     }
 
