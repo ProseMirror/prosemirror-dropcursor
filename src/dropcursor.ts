@@ -11,6 +11,12 @@ interface DropCursorOptions {
 
   /// A CSS class name to add to the cursor element.
   class?: string
+
+  /// A CSS class name to add to the cursor element when not allowed to drop if removeDomDuringDragging is false.
+  disableClass?: string
+
+  /// Either remove the cursor element from the DOM when it is hidden, defaults to `true`.
+  removeDomDuringDragging?: boolean
 }
 
 /// Create a plugin that, when added to a ProseMirror instance,
@@ -38,15 +44,20 @@ class DropCursorView {
   width: number
   color: string | undefined
   class: string | undefined
+  disableClass: string | undefined
+  removeDomDuringDragging = true
   cursorPos: number | null = null
   element: HTMLElement | null = null
   timeout: number = -1
   handlers: {name: string, handler: (event: Event) => void}[]
+  private dragging = false
 
   constructor(readonly editorView: EditorView, options: DropCursorOptions) {
     this.width = options.width ?? 1
     this.color = options.color === false ? undefined : (options.color || "black")
     this.class = options.class
+    this.disableClass = options.disableClass
+    this.removeDomDuringDragging = options.removeDomDuringDragging ?? true
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
       let handler = (e: Event) => { (this as any)[name](e) }
@@ -56,7 +67,9 @@ class DropCursorView {
   }
 
   destroy() {
+    clearTimeout(this.timeout)
     this.handlers.forEach(({name, handler}) => this.editorView.dom.removeEventListener(name, handler))
+    this.removeElement()
   }
 
   update(editorView: EditorView, prevState: EditorState) {
@@ -66,12 +79,36 @@ class DropCursorView {
     }
   }
 
+  private setVisible(visible: boolean) {
+    if (this.element && this.disableClass) {
+      if (visible) {
+        this.element.classList.remove(this.disableClass)
+      } else {
+        this.element.classList.add(this.disableClass)
+      }
+    }
+  }
+
+  private removeElement() {
+    this.element?.parentNode?.removeChild(this.element)
+    this.element = null
+  }
+
   setCursor(pos: number | null) {
-    if (pos == this.cursorPos) return
+    if (pos == this.cursorPos) {
+      // cleanup without put dragging state into argument
+      if (pos == null && this.element && !this.dragging) {
+        this.removeElement()
+      }
+      return
+    }
     this.cursorPos = pos
     if (pos == null) {
-      this.element!.parentNode!.removeChild(this.element!)
-      this.element = null
+      if (this.dragging && !this.removeDomDuringDragging) {
+        this.setVisible(false)
+      } else {
+        this.removeElement()
+      }
     } else {
       this.updateOverlay()
     }
@@ -127,6 +164,7 @@ class DropCursorView {
     this.element.style.top = (rect.top - parentTop) / scaleY + "px"
     this.element.style.width = (rect.right - rect.left) / scaleX + "px"
     this.element.style.height = (rect.bottom - rect.top) / scaleY + "px"
+    this.setVisible(true)
   }
 
   scheduleRemoval(timeout: number) {
@@ -135,34 +173,41 @@ class DropCursorView {
   }
 
   dragover(event: DragEvent) {
+    if (!event.dataTransfer) return
     if (!this.editorView.editable) return
+    this.dragging = true
     let pos = this.editorView.posAtCoords({left: event.clientX, top: event.clientY})
 
     let node = pos && pos.inside >= 0 && this.editorView.state.doc.nodeAt(pos.inside)
     let disableDropCursor = node && node.type.spec.disableDropCursor
     let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos, event) : disableDropCursor
-
     if (pos && !disabled) {
-      let target: number | null = pos.pos
+      event.dataTransfer.dropEffect = "move"
+      let target = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
         let point = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
         if (point != null) target = point
       }
       this.setCursor(target)
       this.scheduleRemoval(5000)
+    } else {
+      event.dataTransfer.dropEffect = "none"
     }
   }
 
   dragend() {
+    this.dragging = false
     this.scheduleRemoval(20)
   }
 
   drop() {
+    this.dragging = false
     this.scheduleRemoval(20)
   }
 
   dragleave(event: DragEvent) {
-    if (event.target == this.editorView.dom || !this.editorView.dom.contains((event as any).relatedTarget))
+    if (event.target == this.editorView.dom || !this.editorView.dom.contains((event as any).relatedTarget)) {
       this.setCursor(null)
+    }
   }
 }
