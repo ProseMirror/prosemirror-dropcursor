@@ -27,6 +27,13 @@ export function dropCursor(options: DropCursorOptions = {}): Plugin {
   })
 }
 
+// Add disableDropCursor to NodeSpec
+declare module "prosemirror-model" {
+  interface NodeSpec {
+    disableDropCursor?: boolean | ((view: EditorView, pos: {pos: number, inside: number}, event: DragEvent) => boolean)
+  }
+}
+
 class DropCursorView {
   width: number
   color: string | undefined
