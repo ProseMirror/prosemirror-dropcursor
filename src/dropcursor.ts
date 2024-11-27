@@ -79,21 +79,29 @@ class DropCursorView {
     }
   }
 
+  private setVisiableByInactiveClass(visible: boolean) {
+    if (!this.element || !this.inactiveClass) {
+      return
+    }
+    if (visible) {
+      this.element.classList.remove(this.inactiveClass)
+    } else {
+      this.element.classList.add(this.inactiveClass)
+    }
+  }
+
   private setVisible(visible: boolean) {
-    if (this.element) {
-      if (visible) {
-        if (this.inactiveClass) {
-          this.element.classList.remove(this.inactiveClass)
-        } else {
-          this.element.style.display = ''
-        }
-      } else {
-        if (this.inactiveClass) {
-          this.element.classList.add(this.inactiveClass)
-        } else {
-          this.element.style.display = 'none'
-        }
-      }
+    if (this.inactiveClass) {
+      this.setVisiableByInactiveClass(visible)
+      return
+    }
+    if (!this.element) {
+      return
+    }
+    if (visible) {
+        this.element.style.display = ''
+    } else {
+        this.element.style.display = 'none'
     }
   }
 
