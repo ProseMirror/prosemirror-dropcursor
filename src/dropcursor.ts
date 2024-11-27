@@ -12,11 +12,11 @@ interface DropCursorOptions {
   /// A CSS class name to add to the cursor element.
   class?: string
 
-  /// A CSS class name to add to the cursor element when not allowed to drop if removeDomDuringDragging is false.
-  disableClass?: string
+  /// A CSS class name to add to the cursor element when not allowed to drop.
+  inactiveClass?: string
 
-  /// Either remove the cursor element from the DOM when it is hidden, defaults to `true`.
-  removeDomDuringDragging?: boolean
+  /// Should calculate the drop point based on the mouse position. Defaults to `true`.
+  shouldCalcDropPoint?: (view: EditorView) => boolean
 }
 
 /// Create a plugin that, when added to a ProseMirror instance,
@@ -44,8 +44,8 @@ class DropCursorView {
   width: number
   color: string | undefined
   class: string | undefined
-  disableClass: string | undefined
-  removeDomDuringDragging = true
+  inactiveClass: string | undefined
+  shouldCalcDropPoint?: (view: EditorView) => boolean
   cursorPos: number | null = null
   element: HTMLElement | null = null
   timeout: number = -1
@@ -56,8 +56,8 @@ class DropCursorView {
     this.width = options.width ?? 1
     this.color = options.color === false ? undefined : (options.color || "black")
     this.class = options.class
-    this.disableClass = options.disableClass
-    this.removeDomDuringDragging = options.removeDomDuringDragging ?? true
+    this.inactiveClass = options.inactiveClass
+    this.shouldCalcDropPoint = options.shouldCalcDropPoint
 
     this.handlers = ["dragover", "dragend", "drop", "dragleave"].map(name => {
       let handler = (e: Event) => { (this as any)[name](e) }
@@ -80,11 +80,19 @@ class DropCursorView {
   }
 
   private setVisible(visible: boolean) {
-    if (this.element && this.disableClass) {
+    if (this.element) {
       if (visible) {
-        this.element.classList.remove(this.disableClass)
+        if (this.inactiveClass) {
+          this.element.classList.remove(this.inactiveClass)
+        } else {
+          this.element.style.display = ''
+        }
       } else {
-        this.element.classList.add(this.disableClass)
+        if (this.inactiveClass) {
+          this.element.classList.add(this.inactiveClass)
+        } else {
+          this.element.style.display = 'none'
+        }
       }
     }
   }
@@ -104,7 +112,7 @@ class DropCursorView {
     }
     this.cursorPos = pos
     if (pos == null) {
-      if (this.dragging && !this.removeDomDuringDragging) {
+      if (this.dragging) {
         this.setVisible(false)
       } else {
         this.removeElement()
@@ -185,8 +193,16 @@ class DropCursorView {
       event.dataTransfer.dropEffect = "move"
       let target = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
-        let point = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
-        if (point != null) target = point
+        const shouldCalcDropPoint =
+          !this.shouldCalcDropPoint || this.shouldCalcDropPoint(this.editorView)
+        if (shouldCalcDropPoint) {
+          const point = dropPoint(
+            this.editorView.state.doc,
+            target,
+            this.editorView.dragging.slice
+          )
+          if (point != null) target = point
+        }
       }
       this.setCursor(target)
       this.scheduleRemoval(5000)
@@ -206,7 +222,10 @@ class DropCursorView {
   }
 
   dragleave(event: DragEvent) {
-    if (event.target == this.editorView.dom || !this.editorView.dom.contains((event as any).relatedTarget)) {
+    if (event.target == this.editorView.dom) {
+      this.setCursor(null)
+    } else if (!this.editorView.dom.contains((event as any).relatedTarget)) {
+      this.dragging = false
       this.setCursor(null)
     }
   }
