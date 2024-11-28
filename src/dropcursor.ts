@@ -136,7 +136,7 @@ class DropCursorView {
     let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos, event) : disableDropCursor
 
     if (pos && !disabled) {
-      let target: number | null = pos.pos
+      let target = pos.pos
       if (this.editorView.dragging && this.editorView.dragging.slice) {
         let point = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice)
         if (point != null) target = point
@@ -155,7 +155,7 @@ class DropCursorView {
   }
 
   dragleave(event: DragEvent) {
-    if (event.target == this.editorView.dom || !this.editorView.dom.contains((event as any).relatedTarget))
+    if (!this.editorView.dom.contains((event as any).relatedTarget))
       this.setCursor(null)
   }
 }
