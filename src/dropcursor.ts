@@ -140,7 +140,9 @@ class DropCursorView {
 
     let node = pos && pos.inside >= 0 && this.editorView.state.doc.nodeAt(pos.inside)
     let disableDropCursor = node && node.type.spec.disableDropCursor
-    let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos, event) : disableDropCursor
+    let disabled = typeof disableDropCursor == "function"
+      ? disableDropCursor(this.editorView, pos!, event)
+      : disableDropCursor
 
     if (pos && !disabled) {
       let target = pos.pos
