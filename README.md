@@ -41,7 +41,7 @@ to communication around the project.
     * **`options`**
 
        * **`color`**`?: string`\
-         The color of the cursor. Defaults to `black`.
+         The color of the cursor. Defaults to `currentColor`.
 
        * **`width`**`?: number`\
          The precise width of the cursor in pixels. Defaults to 1.
