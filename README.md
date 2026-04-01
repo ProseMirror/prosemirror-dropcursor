@@ -1,3 +1,5 @@
+**This repository has moved to https://code.haverbeke.berlin/prosemirror/prosemirror-dropcursor**
+
 # prosemirror-dropcursor
 
 [ [**WEBSITE**](https://prosemirror.net) | [**ISSUES**](https://code.haverbeke.berlin/prosemirror/prosemirror-dropcursor/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**CHANGELOG**](https://code.haverbeke.berlin/prosemirror/prosemirror-dropcursor/src/branch/main/CHANGELOG.md) ]
