@@ -21,7 +21,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/prosemirror/prosemirror-dropcursor.git"
+    "url": "git+https://code.haverbeke.berlin/prosemirror/prosemirror-dropcursor.git"
   },
   "dependencies": {
     "prosemirror-state": "^1.0.0",
